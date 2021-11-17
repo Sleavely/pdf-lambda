@@ -14,7 +14,16 @@ This will create an API gateway and an S3 bucket for your PDFs.
 
 ## Usage
 
-Deploy to your favorite AWS account.
+The API exposes a single POST endpoint:
+
+### `/pdf-lambda`
+
+**Parameters**
+
+- `url` - The URL to use as a template.
+- `data` - A JSON object to feed Handlebars
+
+**Description**
 
 Request a render from the API endpoint:
 
