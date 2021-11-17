@@ -37,6 +37,8 @@ curl \
   }'
 ```
 
-This will return a URL for the rendered PDF which will look something like this:
+The API will return an S3 URL for the rendered PDF.
+
+Here's a before- & after- using the cURL from earlier:
 
 ![](https://i.imgur.com/kC7627v.png)
