@@ -1,0 +1,32 @@
+{
+  "name": "pdf-lambda",
+  "version": "1.0.0",
+  "description": "Renders PDFs from HTML with Chromium and Handlebars",
+  "private": true,
+  "author": "Joakim Hedlund <contact@joakimhedlund.com>",
+  "license": "MIT",
+  "repository": "github:Sleavely/pdf-lambda",
+  "homepage": "https://github.com/Sleavely/pdf-lambda",
+  "keywords": [],
+  "main": "./src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "chrome-aws-lambda": "^10.1.0",
+    "handlebars": "^4.7.7",
+    "lambda-api": "^0.10.6",
+    "puppeteer-core": "^11.0.0",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.77",
+    "aws-sdk": "^2.924.0",
+    "eslint": "^7.20.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.3.1",
+    "eslint-plugin-standard": "^5.0.0"
+  }
+}
