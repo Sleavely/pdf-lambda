@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  PROJECT:
+    Type: String
+  ENVIRONMENT:
+    Type: String
+
+Mappings:
+  dev:
+    api:
+      hostname: aws.triplehead.net
+
+
+Resources:
+  #region REST API
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${PROJECT}-${ENVIRONMENT}
+      StageName: !Ref ENVIRONMENT
+      Cors:
+        AllowMethods: "'POST, GET, OPTIONS'"
+        AllowHeaders: "'Content-Type'"
+        AllowOrigin: "'*'"
+
+  BasePath:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: !Sub ${PROJECT}
+      DomainName: !FindInMap [!Ref ENVIRONMENT, api, hostname]
+      RestApiId: !Ref ApiGateway
+      Stage: !Ref ApiGateway.Stage
+
+  ApiLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${PROJECT}-api-${ENVIRONMENT}
+      Runtime: nodejs14.x
+      CodeUri: dist/src/
+      Handler: index.handler
+      MemorySize: 512
+      Timeout: 25
+      Tracing: Active
+      Environment:
+        Variables:
+          API_BASE_PATH: !Sub ${PROJECT}
+          ENVIRONMENT: !Sub ${ENVIRONMENT}
+          LOG_LEVEL: info
+          PROJECT: !Sub ${PROJECT}
+          TARGET_BUCKET: !Sub ${OutputBucket}
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Method: post
+            Path: /
+
+      Policies:
+      - Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+            - s3:PutObject
+            Resource:
+            - !Sub ${OutputBucket.Arn}
+            - !Sub ${OutputBucket.Arn}/*
+
+  ApiLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApiLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+
+  ApiHandlerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ApiLambda}
+      RetentionInDays: 60
+  #endregion
+
+  #region S3 bucket for PDF storage
+  OutputBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      LifecycleConfiguration:
+        Rules:
+          - Id: TTL
+            Status: Enabled
+            ExpirationInDays: 365
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+
+  OutputBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref OutputBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: PublicReadGetObject,
+            Effect: Allow
+            Principal: '*'
+            Action:
+              - s3:GetObject
+            Resource: !Sub ${OutputBucket.Arn}/*
+  #endregion
