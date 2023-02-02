@@ -1,5 +1,6 @@
 const api = require('./utils/api')
 const { renderUrl } = require('./renderer')
+const { findUrlError } = require('../utils/endpointValidation')
 const { uploadStream } = require('./utils/s3')
 const { v4: uuid } = require('uuid')
 
@@ -16,7 +17,11 @@ api.post('/', async (req, res) => {
   if (!url) {
     return res.status(400).send({ error: 'A URL for the HTML file is required.' })
   }
-  // TODO: Assert that its a valid URL
+
+  const urlError = await findUrlError(url)
+  if (urlError) {
+    return res.status(400).send({ error: urlError })
+  }
 
   const pdfStream = await renderUrl({ url, data })
 
